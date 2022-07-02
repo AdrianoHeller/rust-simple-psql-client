@@ -38,6 +38,23 @@ fn main() {
         eprintln!("Error: {}",err);
         process::exit(1);
     });
+
+    let mut get_user_by_id = |table,id| -> Result<(),Box<dyn Error>>{
+        let recover_query: String = format!("SELECT * FROM {} WHERE id={}",table,id);
+        let req: Vec<Row>= client.query(recover_query.as_str(),&[]).unwrap_or_else(|err| {
+            eprintln!("Error found: {}",err);
+            process::exit(1);
+        });
+        for row in req {
+            let id: i32 = row.get(0);
+            let name: &str = row.get(1);
+            let data: Option<&[u8]> = row.get(2);
+            println!("{},{},{:?}",id,name,data);
+        }
+        Ok(())
+    };
+
+    get_user_by_id("person",1);
 }
 
 fn get_person(client: &mut Client, query: &str) -> Result<(),Box<dyn Error>> {
@@ -51,3 +68,6 @@ fn get_person(client: &mut Client, query: &str) -> Result<(),Box<dyn Error>> {
     }
     Ok(())
 }
+
+
+
