@@ -2,6 +2,8 @@ use std::error::Error;
 use std::process;
 use postgres::{Client, NoTls, Row};
 
+use api_test::{models,services};
+
 fn main() {
 
     println!("Starting connection with postgres...");
@@ -13,33 +15,31 @@ fn main() {
         process::exit(1);
     });
 
-    let creation_query: &str = "
-    CREATE TABLE person IF NOT EXISTS (
-        id      SERIAL PRIMARY KEY,
-        name    TEXT NOT NULL,
-        data    BYTEA
-    )
-    ";
+    if let Err(e) = models::User::check_table(&mut client) {
+        eprintln!("Error found: {}",e);
+        process::exit(1);
+    };
 
-    client.batch_execute(creation_query);
+    if let Err(e) = models::User::new(
+        &mut client,
+        String::from("0h76g762s5f64bioyo3cy53"),
+        String::from("Don Henley"),
+        String::from("don@eagles.com"))
+    {
+        eprintln!("Error found: {}",e);
+        process::exit(1);
+    };
 
-    let name: &str = "Rambo 3";
-    let data = None::<&[u8]>;
-
-    let insertion_query: &str = "INSERT INTO person (name, data) VALUES ($1, $2)";
-
-    client.execute(insertion_query,&[&name,&data],);
-
-    println!("Query executed");
-
-    let recover_query: &str = "SELECT id,name,data FROM person";
-
-    get_person(&mut client,recover_query).unwrap_or_else(|err| {
-        eprintln!("Error: {}",err);
+    let full_data = services::get_all_data_from_table(&mut client,"users").unwrap_or_else(|err|{
+        eprintln!("Error found: {}",err);
         process::exit(1);
     });
 
-    let mut get_user_by_id = |table,id| -> Result<(),Box<dyn Error>>{
+    println!("{:?}",full_data);
+
+    println!("Query executed");
+
+    let mut _get_user_by_id = |table: &str,id: &str| -> Result<(),Box<dyn Error>>{
         let recover_query: String = format!("SELECT * FROM {} WHERE id={}",table,id);
         let req: Vec<Row>= client.query(recover_query.as_str(),&[]).unwrap_or_else(|err| {
             eprintln!("Error found: {}",err);
@@ -53,21 +53,9 @@ fn main() {
         }
         Ok(())
     };
-
-    get_user_by_id("person",1);
 }
 
-fn get_person(client: &mut Client, query: &str) -> Result<(),Box<dyn Error>> {
-    let recover_query: &str = query;
-    let request = client.query(recover_query,&[])?;
-    for row in request {
-        let id: i32 = row.get(0);
-        let name: &str = row.get(1);
-        let data: Option<&[u8]> = row.get(2);
-        println!("id:{},\nname:{},\ndata:{:?}\n",id,name,data);
-    }
-    Ok(())
-}
+
 
 
 

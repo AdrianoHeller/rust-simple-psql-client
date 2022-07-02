@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 
-postgres = "0.19.3"
+postgres = { version = "0.19.3", features = ["with-chrono-0_4"] }
 rand = "0.8.5"
 chrono = "0.4.19"
