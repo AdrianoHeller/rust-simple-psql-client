@@ -1,5 +1,6 @@
+use std::error::Error;
 use std::process;
-use postgres::{Client, NoTls};
+use postgres::{Client, NoTls, Row};
 
 fn main() {
 
@@ -22,7 +23,7 @@ fn main() {
 
     client.batch_execute(creation_query);
 
-    let name: &str = "Dalbo 09";
+    let name: &str = "Rambo 3";
     let data = None::<&[u8]>;
 
     let insertion_query: &str = "INSERT INTO person (name, data) VALUES ($1, $2)";
@@ -33,13 +34,20 @@ fn main() {
 
     let recover_query: &str = "SELECT id,name,data FROM person";
 
-    for row in client.query(recover_query,&[]).unwrap_or_else(|err| {
-            eprintln!("Error: {}",err);
-            process::exit(1);
-    }) {
+    get_person(&mut client,recover_query).unwrap_or_else(|err| {
+        eprintln!("Error: {}",err);
+        process::exit(1);
+    });
+}
+
+fn get_person(client: &mut Client, query: &str) -> Result<(),Box<dyn Error>> {
+    let recover_query: &str = query;
+    let request = client.query(recover_query,&[])?;
+    for row in request {
         let id: i32 = row.get(0);
         let name: &str = row.get(1);
         let data: Option<&[u8]> = row.get(2);
         println!("id:{},\nname:{},\ndata:{:?}\n",id,name,data);
     }
+    Ok(())
 }
