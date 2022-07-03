@@ -7,7 +7,7 @@ use api_test::{models,services,client};
 fn main() {
     println!("Starting connection with postgres...");
 
-    let conn_str: &str = "postgresql://po5tgr3s:po5tgr35.5ql@localhost:5432/test";
+    // let conn_str: &str = "postgresql://po5tgr3s:po5tgr35.5ql@localhost:5432/test";
 
     let mut client = Client::connect(conn_str,NoTls).unwrap_or_else(|err| {
         eprintln!("Error: {}",err);
