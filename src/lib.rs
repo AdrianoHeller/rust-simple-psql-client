@@ -1,7 +1,6 @@
 pub mod models;
 pub mod services;
-pub mod client;
-mod utils;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {

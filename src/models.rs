@@ -39,8 +39,8 @@ impl User {
             &new_user.created_at]).unwrap();
         Ok(())
     }
-    fn get_all(client: &mut Client, query: &str) -> Result<(),Box<dyn Error>> {
-        let recover_query: &str = query;
+    fn get_all(client: &mut Client) -> Result<(),Box<dyn Error>> {
+        let recover_query: &str = "SELECT * FROM users";
         let request = client.query(recover_query,&[])?;
         for row in request {
             let id: i32 = row.get(0);
